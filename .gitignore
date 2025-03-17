@@ -1,0 +1,4 @@
+build/
+*.o
+run.exe
+.vscode/
