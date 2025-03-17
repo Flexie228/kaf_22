@@ -58,7 +58,9 @@ void actionMenu(Matrix** matrixArray, size_t* matrixCount, Err* operationResult)
 {
     size_t action;
     if (*matrixCount < 1) {
-        *operationResult = MATRIX_OPERATION_OK;
+        *operationResult = MATRIX_NOT_DEFINED;
+        system("cls");
+        printErrorMessage(*operationResult);
         return;
     }
 
@@ -160,6 +162,12 @@ void createMenu(Matrix** matrixArray, size_t* matrixCount, Err* operationResult)
 
 void changeMenu(Matrix** matrixArray, size_t matrixCount, Err* operationResult)
 {
+    if (matrixCount < 1) {
+        *operationResult = MATRIX_NOT_DEFINED;
+        system("cls");
+        printErrorMessage(*operationResult);
+        return;
+    }
     printf("Введите номер матрицы которую хотите изменить.\n");
     printf("Номер: ");
     size_t number, row, col;
@@ -182,8 +190,10 @@ void changeMenu(Matrix** matrixArray, size_t matrixCount, Err* operationResult)
 
 void deleteMenu(Matrix** matrixArray, size_t* matrixCount, Err* operationResult)
 {
-    if (*matrixCount == 0) {
-        printf ("Ошибка. Матриц не найдено.\n");
+    if (*matrixCount < 1) {
+        *operationResult = MATRIX_NOT_DEFINED;
+        system("cls");
+        printErrorMessage(*operationResult);
         return;
     }
     size_t action;
