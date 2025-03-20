@@ -275,6 +275,8 @@ void* getElement(const Matrix* matrix, size_t row, size_t col)
 
 void freeMatrix(Matrix* matrix)
 {
-    if (matrix->data != NULL) free(matrix->data);
-    free(matrix);
+    if (matrix->data != NULL) {
+        free(matrix->data);
+        matrix->data = NULL;
+    }
 }

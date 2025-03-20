@@ -17,18 +17,22 @@ Err ArrayInsert(Matrix **matrixArray, Matrix *matrix, size_t *matrixCount) {
 
 Err ArrayDelete(Matrix **matrixArray, size_t index, size_t *matrixCount)
 {
+    if (index >= *matrixCount) return INDEX_OUT_OF_BOUNDS;
     freeMatrix(&(*matrixArray)[index]);
     while (index < *matrixCount - 1) {
         (*matrixArray)[index] = (*matrixArray)[index + 1];
         index++;
     }
     (*matrixCount)--;
+
     if (*matrixCount == 0) {
+        free(*matrixArray);
         *matrixArray = NULL;
         return MATRIX_OPERATION_OK;
     }
+
     Matrix *allocArray = realloc(*matrixArray, sizeof(Matrix) * (*matrixCount));
-    if (allocArray == NULL) return MEMORY_ALLOCATION_FAILED;
+    if (allocArray == NULL && *matrixCount > 0) return MEMORY_ALLOCATION_FAILED;
     *matrixArray = allocArray;
 
     return MATRIX_OPERATION_OK;
