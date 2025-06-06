@@ -16,14 +16,14 @@ class Complex {
         double GetIm() const { return Im; }
 };
 
-std::ostream& operator<<(std::ostream& os, const Complex& number) {
+std::ostream& operator<< (std::ostream& os, const Complex& number) {
     os << number.GetRe();
     if (number.GetIm() >= 0) os << "+";
     os << number.GetIm() << "i";
     return os;
 }
 
-std::istream& operator>>(std::istream& is, Complex& number) {
+std::istream& operator>> (std::istream& is, Complex& number) {
     double re, im;
     char sign, i;
     is >> re >> sign >> im >> i;
@@ -43,6 +43,4 @@ inline bool operator!=(const Complex& lhs, const Complex& rhs)
 {
     return !(lhs == rhs);
 }
-
-
 #endif

@@ -16,9 +16,13 @@ void testArrayDeque() {
         
         ArrayDeque<int> d3(d2);
         assert(d3.GetSize() == 3);
+        assert(d3.GetFront() == 1);
+        assert(d3.GetBack() == 3);
         
         ArrayDeque<int> d4(std::move(d2));
         assert(d4.GetSize() == 3);
+        assert(d4.GetFront() == 1);
+        assert(d4.GetBack() == 3);
         assert(d2.IsEmpty());
     }
 
@@ -49,6 +53,61 @@ void testArrayDeque() {
             assert(d.PopFront() == i);
         }
         assert(d.IsEmpty());
+    }
+
+    // Тест операторов
+    {
+        ArrayDeque<int> d1;
+        for (int i = 0; i < 10; ++i) {
+            d1.PushBack(i);
+        }
+        
+        ArrayDeque<int> d2 = d1;
+        assert(d2.GetSize() == 10);
+        assert(d2.GetFront() == 0);
+        assert(d2.GetBack() == 9);
+        
+        ArrayDeque<int> d3 = std::move(d1);
+        assert(d3.GetSize() == 10);
+        assert(d3.GetFront() == 0);
+        assert(d3.GetBack() == 9);
+        assert(d1.IsEmpty());
+    }
+
+    // Тест граничных случаев
+    {
+        ArrayDeque<int> d;
+        bool error = false;
+        
+        try { d.PopFront(); } 
+        catch (...) { error = true; }
+        assert(error);
+        
+        error = false;
+        try { d.PopBack(); } 
+        catch (...) { error = true; }
+        assert(error);
+        
+        error = false;
+        try { d.GetFront(); } 
+        catch (...) { error = true; }
+        assert(error);
+        
+        error = false;
+        try { d.GetBack(); } 
+        catch (...) { error = true; }
+        assert(error);
+        
+        // Тест доступа по индексу
+        d.PushBack(1);
+        d.PushBack(2);
+        assert(d.Get(0) == 1);
+        assert(d.Get(1) == 2);
+        
+        error = false;
+        try { d.Get(2); }
+        catch (...) { error = true; }
+        assert(error);
     }
 
     std::cout << "All ArrayDeque tests passed!\n";

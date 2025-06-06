@@ -1,8 +1,8 @@
 #include <iostream>
 #include <chrono>
 #include <cassert>
-#include "./include/Deque/ArrayDeque.hpp"
-#include "./include/Deque/NewDeque.hpp"
+#include "Deque/ArrayDeque.hpp"
+#include "Deque/NewDeque.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -10,7 +10,7 @@ using namespace std::chrono;
 template<typename DequeType>
 void Benchmark(const string& name, const vector<size_t>& test_sizes) {
     cout << "Benchmarking " << name << ":\n";
-    
+
     for (size_t size : test_sizes) {
         vector<int> test_data(size);
         for (size_t i = 0; i < size; ++i) {
@@ -76,6 +76,9 @@ void Benchmark(const string& name, const vector<size_t>& test_sizes) {
         cout << "  PopBack: " << pop_back_time << " ms\n";
         cout << "  PopFront: " << pop_front_time << " ms\n";
         cout << "  Get: " << get_time << " ms\n";
-        cout << "  Sum check: " << sum << " (verification)\n\n";
+        cout << "  Sum check: " << sum << " \n\n";
     }
 }
+
+template void Benchmark<ArrayDeque<int>>(const string&, const vector<size_t>&);
+template void Benchmark<NewDeque<int>>(const string&, const vector<size_t>&);
