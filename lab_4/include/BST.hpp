@@ -223,24 +223,22 @@ class BST {
             return node;
         }
 
-        void PrintTree(Node<T>* node, int space = 0) const {
+        void PrintTree(Node<T>* node, const std::string& prefix = "", bool isLeft = true, bool isRoot = true) const {
             if (!node) return;
-            
-            const int SPACING = 4;
-            
-            PrintTree(node->right, space + SPACING);
-            
-            std::cout << std::string(space, ' ') << node->data << std::endl;
-            
-            if (node->left || node->right) {
-                std::cout << std::string(space - 2, ' ');
-                if (node->right) std::cout << "/";
-                if (node->left && node->right) std::cout << " ";
-                if (node->left) std::cout << "\\";
-                std::cout << std::endl;
+        
+            std::string newPrefix = prefix + (isLeft && !isRoot ? "│   " : "    ");
+            PrintTree(node->right, newPrefix, false, false);
+        
+            std::cout << prefix;
+            if (isRoot) {
+                std::cout << "└── ";
+            } else {
+                std::cout << (isLeft ? "└── " : "┌── ");
             }
-
-            PrintTree(node->left, space + SPACING);
+            std::cout << node->data << std::endl;
+        
+            newPrefix = prefix + (isLeft || isRoot ? "    " : "│   ");
+            PrintTree(node->left, newPrefix, true, false);
         }
 
     public:
