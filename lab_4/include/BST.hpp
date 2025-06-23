@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 #include <string>
+#include <queue>
 #include "Errors.hpp"
 #include "Complex.hpp"
 
@@ -91,28 +92,28 @@ class BST {
             return (value < node->data) ? IsContains(node->left, value) : IsContains(node->right, value);
         }
 
-        void Inorder(Node<T>* node) const
+        void Inorder(Node<T>* node, std::vector<T>& result) const
         {
             if (!node) return;
-            Inorder(node->left);
-            std::cout << node->data << " ";
-            Inorder(node->right);
+            Inorder(node->left, result);
+            result.push_back(node->data);
+            Inorder(node->right, result);
         }
     
-        void Preorder(Node<T>* node) const
+        void Preorder(Node<T>* node, std::vector<T>& result) const
         {
             if (!node) return;
-            std::cout << node->data << " ";
-            Preorder(node->left);
-            Preorder(node->right);
+            result.push_back(node->data);
+            Preorder(node->left, result);
+            Preorder(node->right, result);
         }
     
-        void Postorder(Node<T>* node) const
+        void Postorder(Node<T>* node, std::vector<T>& result) const
         {
             if (!node) return;
-            Postorder(node->left);
-            Postorder(node->right);
-            std::cout << node->data << " ";
+            Postorder(node->left, result);
+            Postorder(node->right, result);
+            result.push_back(node->data);
         }
 
         Node<T>* FindNode(Node<T>* node, const T& value) const
@@ -193,6 +194,55 @@ class BST {
             return node;
         }
 
+        Node<T>* BuildFromInorderPreorder(const std::vector<T>& inorder, 
+                                        const std::vector<T>& preorder,
+                                        int inStart, int inEnd,
+                                        int& preIndex)
+        {
+            if (inStart > inEnd) return nullptr;
+
+            Node<T>* node = new Node<T>;
+            node->data = preorder[preIndex++];
+
+            if (inStart == inEnd) {
+                node->left = node->right = nullptr;
+                return node;
+            }
+
+            int inIndex = std::find(inorder.begin() + inStart, 
+                                   inorder.begin() + inEnd + 1, 
+                                   node->data) - inorder.begin();
+
+            node->left = BuildFromInorderPreorder(inorder, preorder, 
+                                                inStart, inIndex - 1, 
+                                                preIndex);
+            node->right = BuildFromInorderPreorder(inorder, preorder, 
+                                                 inIndex + 1, inEnd, 
+                                                 preIndex);
+
+            return node;
+        }
+
+        void PrintTree(Node<T>* node, int space = 0) const {
+            if (!node) return;
+            
+            const int SPACING = 4;
+            
+            PrintTree(node->right, space + SPACING);
+            
+            std::cout << std::string(space, ' ') << node->data << std::endl;
+            
+            if (node->left || node->right) {
+                std::cout << std::string(space - 2, ' ');
+                if (node->right) std::cout << "/";
+                if (node->left && node->right) std::cout << " ";
+                if (node->left) std::cout << "\\";
+                std::cout << std::endl;
+            }
+
+            PrintTree(node->left, space + SPACING);
+        }
+
     public:
         BST() : root(nullptr), nodeCount(0) {}
 
@@ -212,6 +262,17 @@ class BST {
                     int index = elements.size() - 1;
                     root = BuildFromPostorder(elements, index, std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
                     break; }
+                case 4: {
+                    if (elements.size() % 2 != 0) {
+                        throwError(INVALID_ARGUMENT);
+                    }
+                    size_t half = elements.size() / 2;
+                    std::vector<T> inorder(elements.begin(), elements.begin() + half);
+                    std::vector<T> preorder(elements.begin() + half, elements.end());
+                    int preIndex = 0;
+                    root = BuildFromInorderPreorder(inorder, preorder, 0, inorder.size() - 1, preIndex);
+                    nodeCount = inorder.size();
+                    break; }
                 default:
                     throwError(INVALID_ARGUMENT);
             }
@@ -223,8 +284,25 @@ class BST {
         void Remove(const T& val) { root = Remove(root, val); }
         bool IsContains(const T& val) const { return IsContains(root, val); }
 
-        Node<T>* FindByPath(const std::string& path) {
+        std::vector<T> GetInorder() const {
+            std::vector<T> result;
+            Inorder(root, result);
+            return result;
+        }
 
+        std::vector<T> GetPreorder() const {
+            std::vector<T> result;
+            Preorder(root, result);
+            return result;
+        }
+
+        std::vector<T> GetPostorder() const {
+            std::vector<T> result;
+            Postorder(root, result);
+            return result;
+        }
+
+        Node<T>* FindByPath(const std::string& path) {
             if (path.empty()) {
                 if (!root) throwError(INVALID_ARGUMENT);
                 return root;
@@ -265,32 +343,50 @@ class BST {
 
         void printInorder() const
         {
-            Inorder(root);
+            std::vector<T> result;
+            Inorder(root, result);
+            for (const T& val : result) {
+                std::cout << val << " ";
+            }
             std::cout << "\n";
         }
 
         void printPreorder() const
         {
-            Preorder(root);
+            std::vector<T> result;
+            Preorder(root, result);
+            for (const T& val : result) {
+                std::cout << val << " ";
+            }
             std::cout << "\n";
         }
     
         void printPostorder() const
         {
-            Postorder(root);
+            std::vector<T> result;
+            Postorder(root, result);
+            for (const T& val : result) {
+                std::cout << val << " ";
+            }
             std::cout << "\n";
         }
 
-        void printTree(Node<T>* node) const
-        {
-            int space = 0;
-            if (!node) return;
-            space += 4;
-            printTree(node->right);
-            std::cout << std::string(space - 4, ' ') << node->data << "\n";
-            printTree(node->left);
+        void printTree() const {
+            PrintTree(root);
         }
-    
-        void printTree() const { printTree(root); }
+
+        BST(const BST& other) : root(nullptr), nodeCount(0) {
+            CopySubtree(other.root, root);
+            nodeCount = other.nodeCount;
+        }
+        
+        BST& operator=(const BST& other) {
+            if (this != &other) {
+                Clear(root);
+                CopySubtree(other.root, root);
+                nodeCount = other.nodeCount;
+            }
+            return *this;
+        }
 };
 #endif

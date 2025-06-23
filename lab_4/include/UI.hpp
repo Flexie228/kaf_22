@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <limits>
+#include <algorithm>
 
 template <typename T>
 struct TreeContainer {
@@ -21,13 +22,11 @@ class Manager {
         std::vector<TreeContainer<Complex>> complexTrees;
         const size_t MAX_TREES = 10;
     
-        // Очистка ввода
         void clearInput() {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     
-        // вывод доступных деревьев
         template <typename T>
         void printAvailableTrees(const std::vector<TreeContainer<T>>& trees) {
             if (trees.empty()) {
@@ -41,7 +40,6 @@ class Manager {
             }
         }
     
-        // меню операций с деревом
         template <typename T>
         void printTreeMenu(TreeContainer<T>& container) {
             int choice;
@@ -53,9 +51,10 @@ class Manager {
                           << "4. Print inorder\n"
                           << "5. Print preorder\n"
                           << "6. Print postorder\n"
-                          << "7. Visualize tree(beta)\n"
+                          << "7. Visualize tree\n"
                           << "8. Get subtree\n"
                           << "9. Find by path\n"
+                          << "10. Get traversal sequences\n"
                           << "0. Back to main menu\n"
                           << "Choice: ";
                 
@@ -125,6 +124,15 @@ class Manager {
                             std::cout << "Found node: " << node->data << "\n";
                             break;
                         }
+                        case 10: {
+                            std::cout << "Inorder: ";
+                            container.tree.printInorder();
+                            std::cout << "Preorder: ";
+                            container.tree.printPreorder();
+                            std::cout << "Postorder: ";
+                            container.tree.printPostorder();
+                            break;
+                        }
                         case 0:
                             return;
                         default:
@@ -138,7 +146,6 @@ class Manager {
             } while (true);
         }
     
-        // меню создания дерева
         template <typename T>
         void createTreeMenu(std::vector<TreeContainer<T>>& trees) {
             if (trees.size() >= MAX_TREES) {
@@ -156,6 +163,7 @@ class Manager {
                       << "2. Inorder sequence\n"
                       << "3. Preorder sequence\n"
                       << "4. Postorder sequence\n"
+                      << "5. Inorder + Preorder sequences\n"
                       << "Choice: ";
             std::cin >> choice;
             clearInput();
@@ -166,10 +174,38 @@ class Manager {
                         trees.push_back(newTree);
                         std::cout << "Empty tree created successfully.\n";
                         break;
-                    case 2: case 3: case 4: {
-                        std::vector<T> elements;
+                        case 2: case 3: case 4: {
+                            std::vector<T> elements;
+                            std::cout << "Enter elements (space separated, finish with empty line):\n";
+                            std::string line;
+                            while (std::getline(std::cin, line) && !line.empty()) {
+                                std::istringstream iss(line);
+                                T value;
+                                while (iss >> value) {
+                                    elements.push_back(value);
+                                }
+                            }
+                            
+                            if (elements.empty()) {
+                                trees.push_back(newTree);
+                                std::cout << "Empty tree created.\n";
+                                break;
+                            }
+                            
+                            try {
+                                newTree.tree = BST<T>(elements, choice);
+                                trees.push_back(newTree);
+                                std::cout << "Tree created successfully with " << elements.size() << " elements.\n";
+                            } catch (const std::exception& e) {
+                                std::cerr << "Error creating tree: " << e.what() << "\n";
+                            }
+                            break;
+                        }
+                    case 5: {
+                        std::vector<T> inorder, preorder;
                         T value;
-                        std::cout << "Enter elements (one per line, empty line to finish):\n";
+                        
+                        std::cout << "Enter INORDER elements (one per line, empty line to finish):\n";
                         while (true) {
                             std::string input;
                             std::getline(std::cin, input);
@@ -177,20 +213,36 @@ class Manager {
     
                             std::istringstream iss(input);
                             if (iss >> value) {
-                                elements.push_back(value);
+                                inorder.push_back(value);
                             } else {
                                 std::cout << "Invalid input, try again.\n";
                             }
                         }
+                        
+                        std::cout << "Enter PREORDER elements (one per line, empty line to finish):\n";
+                        while (true) {
+                            std::string input;
+                            std::getline(std::cin, input);
+                            if (input.empty()) break;
     
-                        if (choice == 2 && !std::is_sorted(elements.begin(), elements.end())) {
-                            std::sort(elements.begin(), elements.end());
-                            std::cout << "Note: Input sorted for inorder construction.\n";
+                            std::istringstream iss(input);
+                            if (iss >> value) {
+                                preorder.push_back(value);
+                            } else {
+                                std::cout << "Invalid input, try again.\n";
+                            }
                         }
-    
-                        newTree.tree = BST<T>(elements, choice);
+                        
+                        if (inorder.size() != preorder.size()) {
+                            throwError(INVALID_ARGUMENT);
+                        }
+                        
+                        std::vector<T> combined = inorder;
+                        combined.insert(combined.end(), preorder.begin(), preorder.end());
+                        
+                        newTree.tree = BST<T>(combined, 4);
                         trees.push_back(newTree);
-                        std::cout << "Tree created successfully with " << elements.size() << " elements.\n";
+                        std::cout << "Tree created successfully from inorder and preorder sequences.\n";
                         break;
                     }
                     default:
@@ -203,7 +255,6 @@ class Manager {
             }
         }
     
-        // меню выбора дерева
         template <typename T>
         void selectTreeMenu(std::vector<TreeContainer<T>>& trees) {
             if (trees.empty()) {
@@ -223,7 +274,6 @@ class Manager {
             }
         }
     
-        // Меню для работы с конкретным типом деревьев
         template <typename T>
         void typeMenu(std::vector<TreeContainer<T>>& trees, const std::string& typeName) {
             int choice;
@@ -292,6 +342,6 @@ class Manager {
                 }
             } while (true);
         }
-    };
+};
 
 #endif

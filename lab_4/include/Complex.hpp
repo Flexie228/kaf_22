@@ -40,14 +40,21 @@ inline std::ostream& operator<< (std::ostream& os, const Complex& number)
     return os;
 }
 
-inline std::istream& operator>> (std::istream& is, Complex& number)
-{
-    double re, im;
-    char sign, i;
-    is >> re >> sign >> im >> i;
-
-    if (i != 'i' || (sign != '+' && sign != '-')) throwError(INVALID_ARGUMENT);
-
+inline std::istream& operator>> (std::istream& is, Complex& number) {
+    double re = 0.0, im = 0.0;
+    char sign = '+', i = 'i';
+    
+    is >> re;
+    if (is.peek() == '+' || is.peek() == '-') {
+        is >> sign;
+    }
+    is >> im >> i;
+    
+    if (i != 'i') {
+        is.setstate(std::ios::failbit);
+        return is;
+    }
+    
     number = Complex(re, (sign == '-') ? -im : im);
     return is;
 }
